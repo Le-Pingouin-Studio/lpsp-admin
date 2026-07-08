@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, ArrowRight, Loader2, Fingerprint } from 'lucide-react';
+import Image from 'next/image';
+import isologo from '../../public/isologo.png';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -30,13 +32,13 @@ export default function LoginPage() {
       }
 
       const data = await res.json();
-      
+
       // Save token in cookie for middleware
       document.cookie = `lpsp_admin_token=${data.access_token}; path=/; max-age=86400; samesite=strict`;
-      
+
       // Save token in localStorage for client API calls
       localStorage.setItem('lpsp_admin_token', data.access_token);
-      
+
       router.push('/');
       router.refresh();
     } catch (err: any) {
@@ -51,20 +53,20 @@ export default function LoginPage() {
       {/* Left side - Branding (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-zinc-950 text-white p-12 relative overflow-hidden">
         {/* Abstract Background Element */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-20">
-          <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-blue-600 blur-[120px]"></div>
-          <div className="absolute top-[60%] -right-[20%] w-[60%] h-[60%] rounded-full bg-emerald-600 blur-[100px]"></div>
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-40">
+          <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-primary blur-[120px]"></div>
+          <div className="absolute top-[60%] -right-[20%] w-[60%] h-[60%] rounded-full bg-secondary blur-[100px]"></div>
         </div>
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 font-semibold text-2xl tracking-tight">
-            <div className="w-10 h-10 rounded-xl bg-white text-zinc-950 flex items-center justify-center">
-              <span className="font-bold text-xl">L</span>
+            <div className="w-12 h-12 flex items-center justify-center overflow-hidden">
+              <Image src={isologo} alt="Logo" width={48} height={48} className="object-contain" priority />
             </div>
             Le Pingouin Studio
           </div>
         </div>
-        
+
         <div className="relative z-10 max-w-lg">
           <h1 className="text-5xl font-bold tracking-tight mb-6 leading-tight">
             Gestión <span className="text-zinc-400">inteligente</span> para tu negocio.
@@ -73,7 +75,7 @@ export default function LoginPage() {
             Accede al panel de administración para controlar inventario, ventas, categorías y más, en una plataforma diseñada para maximizar tu productividad.
           </p>
         </div>
-        
+
         <div className="relative z-10 text-sm text-zinc-500">
           © {new Date().getFullYear()} Le Pingouin Studio. Todos los derechos reservados.
         </div>
@@ -84,8 +86,8 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-10">
           <div className="text-center lg:text-left">
             <div className="lg:hidden flex justify-center mb-8">
-              <div className="w-12 h-12 rounded-xl bg-zinc-950 text-white flex items-center justify-center">
-                <span className="font-bold text-2xl">L</span>
+              <div className="w-16 h-16 flex items-center justify-center overflow-hidden">
+                <Image src={isologo} alt="Logo" width={64} height={64} className="object-contain" priority />
               </div>
             </div>
             <h2 className="text-3xl font-bold tracking-tight text-zinc-950">
