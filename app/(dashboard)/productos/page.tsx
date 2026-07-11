@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Plus, Search, Filter, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Filter, Edit, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -22,7 +22,8 @@ import { getProducts, getCategories, createProduct, deleteProduct, updateProduct
 
 export default function ProductsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<any[]>([]);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const handleCloseDialog = () => {
@@ -34,7 +35,8 @@ export default function ProductsPage() {
         gramos_pieza: '', horas_impresion: '', minutos_impresion: '',
         segundos_impresion: '', categoryId: ''
       });
-      setSelectedFile(null);
+      setSelectedFiles([]);
+      setExistingImages([]);
     }, 200);
   };
 
@@ -105,11 +107,12 @@ export default function ProductsPage() {
     formData.append("segundos_impresion", String(Number(data.segundos_impresion)));
     formData.append("categoryId", data.categoryId);
 
-    if (selectedFile) {
-      formData.append("image", selectedFile);
-    }
+    selectedFiles.forEach(file => {
+      formData.append("images", file);
+    });
 
     if (editingProduct) {
+      formData.append("imagesToKeep", JSON.stringify(existingImages.map(img => img.imageId)));
       updateMutation.mutate({ productId: editingProduct.productId, formData });
     } else {
       createMutation.mutate(formData);
@@ -118,8 +121,16 @@ export default function ProductsPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);
+      setSelectedFiles(prev => [...prev, ...Array.from(e.target.files as FileList)]);
     }
+  };
+
+  const removeSelectedFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImage = (imageId: string) => {
+    setExistingImages(prev => prev.filter(img => img.imageId !== imageId));
   };
 
   return (
@@ -294,9 +305,37 @@ export default function ProductsPage() {
                     />
                   </div>
                   <div className="space-y-2 col-span-2">
-                    <Label>Imagen del Producto</Label>
-                    <Input type="file" accept="image/*" className="cursor-pointer" onChange={handleFileChange} />
-                    <p className="text-xs text-muted-foreground">La imagen se subirá a Cloudinary.</p>
+                    <Label>Imágenes del Producto</Label>
+                    <Input type="file" multiple accept="image/*" className="cursor-pointer" onChange={handleFileChange} />
+                    <p className="text-xs text-muted-foreground">Las imágenes se subirán a Cloudinary.</p>
+                    {(existingImages.length > 0 || selectedFiles.length > 0) && (
+                      <div className="grid grid-cols-4 gap-4 mt-4">
+                        {existingImages.map((img) => (
+                          <div key={img.imageId} className="relative group rounded-md overflow-hidden border aspect-square">
+                            <img src={img.secureUrl || img.secure_url} alt="Preview" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => removeExistingImage(img.imageId)}
+                              className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                        {selectedFiles.map((file, index) => (
+                          <div key={index} className="relative group rounded-md overflow-hidden border aspect-square">
+                            <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => removeSelectedFile(index)}
+                              className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="pt-4 flex justify-end gap-3 border-t">
@@ -371,6 +410,7 @@ export default function ProductsPage() {
                         className="h-8 w-8 text-muted-foreground hover:text-foreground"
                         onClick={() => {
                           setEditingProduct(product);
+                          setExistingImages(product.images || []);
                           reset({
                             name: product.name,
                             description: product.description,
