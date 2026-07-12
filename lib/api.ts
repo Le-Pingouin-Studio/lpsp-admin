@@ -65,6 +65,9 @@ export interface Product {
   horas_impresion: number;
   minutos_impresion: number;
   segundos_impresion: number;
+  ancho?: number;
+  alto?: number;
+  profundidad?: number;
   images?: ProductImage[];
   categoryId: string;
   category?: Category;
@@ -73,7 +76,11 @@ export interface Product {
 export async function getProducts(): Promise<Product[]> {
   const res = await fetch(`${API_URL}/products`, { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch products');
-  return res.json();
+  const json = await res.json();
+  if (json && Array.isArray(json.data)) {
+    return json.data;
+  }
+  return json;
 }
 
 export async function createProduct(formData: FormData): Promise<Product> {

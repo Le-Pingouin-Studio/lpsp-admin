@@ -33,7 +33,7 @@ export default function ProductsPage() {
       reset({
         name: '', description: '', price: '', stock: '',
         gramos_pieza: '', horas_impresion: '', minutos_impresion: '',
-        segundos_impresion: '', categoryId: ''
+        segundos_impresion: '', categoryId: '', ancho: '', alto: '', profundidad: ''
       });
       setSelectedFiles([]);
       setExistingImages([]);
@@ -50,7 +50,10 @@ export default function ProductsPage() {
       horas_impresion: '',
       minutos_impresion: '',
       segundos_impresion: '',
-      categoryId: ''
+      categoryId: '',
+      ancho: '',
+      alto: '',
+      profundidad: ''
     }
   });
 
@@ -106,6 +109,9 @@ export default function ProductsPage() {
     formData.append("minutos_impresion", String(Number(data.minutos_impresion)));
     formData.append("segundos_impresion", String(Number(data.segundos_impresion)));
     formData.append("categoryId", data.categoryId);
+    if (data.ancho) formData.append("ancho", String(Number(data.ancho)));
+    if (data.alto) formData.append("alto", String(Number(data.alto)));
+    if (data.profundidad) formData.append("profundidad", String(Number(data.profundidad)));
 
     selectedFiles.forEach(file => {
       formData.append("images", file);
@@ -304,6 +310,30 @@ export default function ProductsPage() {
                       render={({ field }) => <Input type="number" {...field} placeholder="0" />}
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label>Ancho (cm)</Label>
+                    <Controller
+                      name="ancho"
+                      control={control}
+                      render={({ field }) => <Input type="number" step="0.1" {...field} placeholder="10.5" />}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Alto (cm)</Label>
+                    <Controller
+                      name="alto"
+                      control={control}
+                      render={({ field }) => <Input type="number" step="0.1" {...field} placeholder="15.0" />}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Profundidad (cm)</Label>
+                    <Controller
+                      name="profundidad"
+                      control={control}
+                      render={({ field }) => <Input type="number" step="0.1" {...field} placeholder="5.2" />}
+                    />
+                  </div>
                   <div className="space-y-2 col-span-2">
                     <Label>Imágenes del Producto</Label>
                     <Input type="file" multiple accept="image/*" className="cursor-pointer" onChange={handleFileChange} />
@@ -420,7 +450,10 @@ export default function ProductsPage() {
                             horas_impresion: String(product.horas_impresion),
                             minutos_impresion: String(product.minutos_impresion),
                             segundos_impresion: String(product.segundos_impresion),
-                            categoryId: product.categoryId || (product.category ? product.category.categoryId : '')
+                            categoryId: product.categoryId || (product.category ? product.category.categoryId : ''),
+                            ancho: product.ancho ? String(product.ancho) : '',
+                            alto: product.alto ? String(product.alto) : '',
+                            profundidad: product.profundidad ? String(product.profundidad) : ''
                           });
                           setIsDialogOpen(true);
                         }}
