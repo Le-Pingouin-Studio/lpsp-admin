@@ -73,14 +73,56 @@ export interface Product {
   category?: Category;
 }
 
-export async function getProducts(): Promise<Product[]> {
-  const res = await fetch(`${API_URL}/products`, { cache: 'no-store' });
+export interface PaginationMeta {
+  totalItems: number;
+  currentPage: number;
+  itemsPerPage: number;
+  hasMore: boolean;
+}
+
+export interface GetProductsResponse {
+  data: Product[];
+  meta: PaginationMeta;
+}
+
+export interface GetProductsParams {
+  page?: number;
+  limit?: number;
+  categories?: string[];
+  sort?: string;
+  search?: string;
+}
+
+export async function getProducts(params?: GetProductsParams): Promise<GetProductsResponse> {
+  const queryParams = new URLSearchParams();
+  if (params?.page) queryParams.append('page', params.page.toString());
+  if (params?.limit) queryParams.append('limit', params.limit.toString());
+  if (params?.categories && params.categories.length > 0) {
+    queryParams.append('categories', params.categories.join(','));
+  }
+  if (params?.sort) queryParams.append('sort', params.sort);
+  if (params?.search) queryParams.append('search', params.search);
+
+  const queryString = queryParams.toString();
+  const url = `${API_URL}/products${queryString ? `?${queryString}` : ''}`;
+
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch products');
   const json = await res.json();
-  if (json && Array.isArray(json.data)) {
-    return json.data;
+  
+  if (json && json.data && json.meta) {
+    return json;
   }
-  return json;
+  
+  return {
+    data: Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []),
+    meta: {
+      totalItems: Array.isArray(json) ? json.length : 0,
+      currentPage: 1,
+      itemsPerPage: 100,
+      hasMore: false,
+    }
+  };
 }
 
 export async function createProduct(formData: FormData): Promise<Product> {
