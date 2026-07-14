@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Plus, Search, Filter, Edit, Trash2, X } from "lucide-react";
+import { Plus, Search, Filter, Edit, Trash2, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,24 @@ export default function ProductsPage() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<any[]>([]);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [sortOption, setSortOption] = useState<string>('Relevancia');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.length >= 3 || searchQuery.length === 0) {
+        setDebouncedSearch(searchQuery);
+        setPage(1);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
@@ -59,10 +78,19 @@ export default function ProductsPage() {
 
   const queryClient = useQueryClient();
 
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products'],
-    queryFn: getProducts,
+  const { data: productsData = { data: [], meta: { totalItems: 0, currentPage: 1, itemsPerPage: 10, hasMore: false } }, isLoading } = useQuery({
+    queryKey: ['products', page, limit, selectedCategory, sortOption, debouncedSearch],
+    queryFn: () => getProducts({
+      page,
+      limit,
+      categories: selectedCategory !== 'all' ? [selectedCategory] : [],
+      sort: sortOption,
+      search: debouncedSearch
+    }),
   });
+
+  const products = productsData.data;
+  const meta = productsData.meta;
 
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
@@ -190,13 +218,39 @@ export default function ProductsPage() {
       <Card>
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 gap-4">
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <div className="relative">
+            <div className="relative hidden md:block">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input type="search" placeholder="Buscar catálogo..." className="pl-9 w-[250px]" />
+              <Input 
+                type="search" 
+                placeholder="Buscar catálogo..." 
+                className="pl-9 w-[250px]" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" /> Filtro
-            </Button>
+            
+            <Select value={selectedCategory} onValueChange={(val) => { setSelectedCategory(val as string); setPage(1); }}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filtrar por categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las categorías</SelectItem>
+                {categories.map(c => (
+                  <SelectItem key={c.categoryId} value={c.slug}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={sortOption} onValueChange={(val) => { setSortOption(val as string); setPage(1); }}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Ordenar por" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Relevancia">Relevancia</SelectItem>
+                <SelectItem value="Menor Precio">Menor Precio</SelectItem>
+                <SelectItem value="Mayor Precio">Mayor Precio</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
@@ -479,6 +533,36 @@ export default function ProductsPage() {
             </TableBody>
           </Table>
         </div>
+        
+        {/* Paginación */}
+        {!isLoading && products.length > 0 && (
+          <div className="flex items-center justify-between px-4 py-4 border-t bg-muted/20">
+            <div className="text-sm text-muted-foreground">
+              Mostrando {((meta.currentPage - 1) * meta.itemsPerPage) + 1} - {Math.min(meta.currentPage * meta.itemsPerPage, meta.totalItems)} de {meta.totalItems} productos
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={meta.currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+              </Button>
+              <div className="text-sm font-medium">
+                Página {meta.currentPage} de {Math.max(1, Math.ceil(meta.totalItems / meta.itemsPerPage))}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => p + 1)}
+                disabled={!meta.hasMore}
+              >
+                Siguiente <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );
