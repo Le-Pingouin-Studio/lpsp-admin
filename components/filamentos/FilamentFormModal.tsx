@@ -6,7 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Filament, CreateFilamentDto, UpdateFilamentDto } from "@/lib/api";
+import { Filament, CreateFilamentDto, UpdateFilamentDto, getColors, Color } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
 interface FilamentFormModalProps {
   isOpen: boolean;
@@ -17,29 +18,36 @@ interface FilamentFormModalProps {
 }
 
 export function FilamentFormModal({ isOpen, onClose, onSubmit, isPending, filament }: FilamentFormModalProps) {
-  const { control, handleSubmit, reset, setValue } = useForm({
+  const { data: availableColors = [] } = useQuery({
+    queryKey: ['colors'],
+    queryFn: getColors,
+  });
+
+  const { control, handleSubmit, reset, setValue, watch } = useForm({
     defaultValues: {
       marca: '',
       modelo: 'Básico',
       tipo: 'PLA',
-      color: '#FFFFFF',
+      colorIds: [] as string[],
       cantidadGramos: 1000,
     }
   });
+
+  const selectedColorIds = watch('colorIds');
 
   useEffect(() => {
     if (filament) {
       setValue('marca', filament.marca);
       setValue('modelo', filament.modelo);
       setValue('tipo', filament.tipo);
-      setValue('color', filament.color);
+      setValue('colorIds', (filament.colors || []).map(c => c.colorId));
       setValue('cantidadGramos', filament.cantidadGramos);
     } else {
       reset({
         marca: '',
         modelo: 'Básico',
         tipo: 'PLA',
-        color: '#FFFFFF',
+        colorIds: [],
         cantidadGramos: 1000,
       });
     }
@@ -90,24 +98,29 @@ export function FilamentFormModal({ isOpen, onClose, onSubmit, isPending, filame
             />
           </div>
           <div className="space-y-2">
-            <Label>Color (HEX)</Label>
-            <div className="flex gap-2">
-              <Controller
-                name="color"
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <Input type="color" className="w-12 h-10 p-1 cursor-pointer" {...field} />
-                )}
-              />
-              <Controller
-                name="color"
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <Input className="flex-1 uppercase font-mono" {...field} placeholder="#FFFFFF" />
-                )}
-              />
+            <Label>Colores Disponibles</Label>
+            <div className="flex flex-wrap gap-2 p-3 border rounded-md max-h-40 overflow-y-auto">
+              {availableColors.length === 0 && <span className="text-sm text-muted-foreground">No hay colores registrados. Cree colores primero.</span>}
+              {availableColors.map((c: Color) => {
+                const isSelected = selectedColorIds.includes(c.colorId);
+                return (
+                  <button
+                    type="button"
+                    key={c.colorId}
+                    onClick={() => {
+                      if (isSelected) {
+                        setValue('colorIds', selectedColorIds.filter(id => id !== c.colorId));
+                      } else {
+                        setValue('colorIds', [...selectedColorIds, c.colorId]);
+                      }
+                    }}
+                    className={`flex items-center gap-2 px-3 py-1.5 border rounded-full text-sm transition-all ${isSelected ? 'border-primary bg-primary/10 ring-1 ring-primary' : 'border-border hover:bg-muted'}`}
+                  >
+                    <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: c.hexCode }} />
+                    {c.nombre}
+                  </button>
+                );
+              })}
             </div>
           </div>
           <div className="space-y-2">

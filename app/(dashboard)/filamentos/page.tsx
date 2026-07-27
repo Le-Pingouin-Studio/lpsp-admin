@@ -107,9 +107,11 @@ export default function FilamentsPage() {
                   <TableCell className="text-muted-foreground">{fil.modelo}</TableCell>
                   <TableCell className="font-medium">{fil.tipo}</TableCell>
                   <TableCell>
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-5 h-5 rounded-full border border-border shadow-sm" style={{ backgroundColor: fil.color }} title={fil.color} />
-                      <span className="text-xs font-mono text-muted-foreground uppercase">{fil.color}</span>
+                    <div className="flex flex-wrap items-center justify-center gap-1">
+                      {(!fil.colors || fil.colors.length === 0) && <span className="text-xs text-muted-foreground">Sin colores</span>}
+                      {fil.colors?.map(c => (
+                        <div key={c.colorId} className="w-5 h-5 rounded-full border border-border shadow-sm flex-shrink-0" style={{ backgroundColor: c.hexCode }} title={`${c.nombre} (${c.hexCode})`} />
+                      ))}
                     </div>
                   </TableCell>
                   <TableCell className="text-center font-medium">

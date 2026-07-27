@@ -10,7 +10,8 @@ import {
   CreditCard,
   Calculator,
   Settings,
-  Palette
+  Palette,
+  Droplet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Productos", href: "/productos", icon: Package },
   { name: "Categorías", href: "/categorias", icon: Archive },
+  { name: "Colores", href: "/colores", icon: Droplet },
   { name: "Filamentos", href: "/filamentos", icon: Palette },
   // { name: "Inventario", href: "/inventario", icon: Archive },
   // { name: "Ventas", href: "/ventas", icon: CreditCard },

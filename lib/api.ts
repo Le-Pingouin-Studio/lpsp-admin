@@ -208,13 +208,63 @@ export async function calculateFinalPrice(dto: CalculatePieceDto): Promise<Calcu
   return res.json();
 }
 
+// Colors
+export interface Color {
+  colorId: string;
+  nombre: string;
+  hexCode: string;
+  pantone?: string;
+}
+
+export interface CreateColorDto {
+  nombre: string;
+  hexCode: string;
+  pantone?: string;
+}
+
+export interface UpdateColorDto extends Partial<CreateColorDto> {}
+
+export async function getColors(): Promise<Color[]> {
+  const res = await fetch(`${API_URL}/colors`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch colors');
+  return res.json();
+}
+
+export async function createColor(data: CreateColorDto): Promise<Color> {
+  const res = await fetch(`${API_URL}/colors`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create color');
+  return res.json();
+}
+
+export async function updateColor(id: string, data: UpdateColorDto): Promise<Color> {
+  const res = await fetch(`${API_URL}/colors/${id}`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update color');
+  return res.json();
+}
+
+export async function deleteColor(id: string): Promise<void> {
+  const res = await fetch(`${API_URL}/colors/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to delete color');
+}
+
 // Filaments
 export interface Filament {
   filamentId: string;
   marca: string;
   modelo: string;
   tipo: string;
-  color: string;
+  colors: Color[];
   cantidadGramos: number;
 }
 
@@ -222,7 +272,7 @@ export interface CreateFilamentDto {
   marca: string;
   modelo?: string;
   tipo?: string;
-  color?: string;
+  colorIds?: string[];
   cantidadGramos?: number;
 }
 
