@@ -13,7 +13,7 @@ import { FilamentFormModal } from "@/components/filamentos/FilamentFormModal";
 export default function FilamentsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingFilament, setEditingFilament] = useState<Filament | null>(null);
-  
+
   const queryClient = useQueryClient();
 
   const { data: filaments = [], isLoading } = useQuery({
@@ -75,7 +75,7 @@ export default function FilamentsPage() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input type="search" placeholder="Buscar filamento..." className="pl-9 w-[250px]" />
           </div>
-          
+
           <Button onClick={handleOpenNew} className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90 gap-2">
             <Plus className="h-4 w-4" /> Agregar Filamento
           </Button>
@@ -107,9 +107,11 @@ export default function FilamentsPage() {
                   <TableCell className="text-muted-foreground">{fil.modelo}</TableCell>
                   <TableCell className="font-medium">{fil.tipo}</TableCell>
                   <TableCell>
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-5 h-5 rounded-full border border-border shadow-sm" style={{ backgroundColor: fil.color }} title={fil.color} />
-                      <span className="text-xs font-mono text-muted-foreground uppercase">{fil.color}</span>
+                    <div className="flex flex-wrap items-center justify-center gap-1">
+                      {(!fil.colors || fil.colors.length === 0) && <span className="text-xs text-muted-foreground">Sin colores</span>}
+                      {fil.colors?.map(c => (
+                        <div key={c.colorId} className="w-5 h-5 rounded-full border border-border shadow-sm flex-shrink-0" style={{ backgroundColor: c.hexCode }} title={`${c.nombre} (${c.hexCode})`} />
+                      ))}
                     </div>
                   </TableCell>
                   <TableCell className="text-center font-medium">
@@ -122,12 +124,12 @@ export default function FilamentsPage() {
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => handleOpenEdit(fil)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-destructive hover:text-destructive"
                         onClick={() => {
-                          if (confirm(`¿Estás seguro de que quieres eliminar el filamento ${fil.marca} - ${fil.color}?`)) {
+                          if (confirm(`¿Estás seguro de que quieres eliminar el filamento ${fil.marca} - ${fil.colors?.map(c => c.nombre).join(', ') ?? ''}?`)) {
                             deleteMutation.mutate(fil.filamentId);
                           }
                         }}
@@ -142,8 +144,8 @@ export default function FilamentsPage() {
           </Table>
         </div>
       </Card>
-      
-      <FilamentFormModal 
+
+      <FilamentFormModal
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onSubmit={handleSubmit}
