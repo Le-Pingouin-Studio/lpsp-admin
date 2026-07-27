@@ -207,3 +207,57 @@ export async function calculateFinalPrice(dto: CalculatePieceDto): Promise<Calcu
   }
   return res.json();
 }
+
+// Filaments
+export interface Filament {
+  filamentId: string;
+  marca: string;
+  modelo: string;
+  tipo: string;
+  color: string;
+  cantidadGramos: number;
+}
+
+export interface CreateFilamentDto {
+  marca: string;
+  modelo?: string;
+  tipo?: string;
+  color?: string;
+  cantidadGramos?: number;
+}
+
+export interface UpdateFilamentDto extends Partial<CreateFilamentDto> {}
+
+export async function getFilaments(): Promise<Filament[]> {
+  const res = await fetch(`${API_URL}/filaments`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch filaments');
+  return res.json();
+}
+
+export async function createFilament(data: CreateFilamentDto): Promise<Filament> {
+  const res = await fetch(`${API_URL}/filaments`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create filament');
+  return res.json();
+}
+
+export async function updateFilament(id: string, data: UpdateFilamentDto): Promise<Filament> {
+  const res = await fetch(`${API_URL}/filaments/${id}`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update filament');
+  return res.json();
+}
+
+export async function deleteFilament(id: string): Promise<void> {
+  const res = await fetch(`${API_URL}/filaments/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to delete filament');
+}

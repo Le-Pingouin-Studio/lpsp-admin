@@ -9,7 +9,8 @@ import {
   Archive,
   CreditCard,
   Calculator,
-  Settings
+  Settings,
+  Palette
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Productos", href: "/productos", icon: Package },
   { name: "Categorías", href: "/categorias", icon: Archive },
+  { name: "Filamentos", href: "/filamentos", icon: Palette },
   // { name: "Inventario", href: "/inventario", icon: Archive },
   // { name: "Ventas", href: "/ventas", icon: CreditCard },
   { name: "Calculadora", href: "/calculadora", icon: Calculator },
