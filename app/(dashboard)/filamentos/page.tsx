@@ -13,7 +13,7 @@ import { FilamentFormModal } from "@/components/filamentos/FilamentFormModal";
 export default function FilamentsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingFilament, setEditingFilament] = useState<Filament | null>(null);
-  
+
   const queryClient = useQueryClient();
 
   const { data: filaments = [], isLoading } = useQuery({
@@ -75,7 +75,7 @@ export default function FilamentsPage() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input type="search" placeholder="Buscar filamento..." className="pl-9 w-[250px]" />
           </div>
-          
+
           <Button onClick={handleOpenNew} className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90 gap-2">
             <Plus className="h-4 w-4" /> Agregar Filamento
           </Button>
@@ -124,12 +124,12 @@ export default function FilamentsPage() {
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => handleOpenEdit(fil)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-destructive hover:text-destructive"
                         onClick={() => {
-                          if (confirm(`¿Estás seguro de que quieres eliminar el filamento ${fil.marca} - ${fil.colors?.map(c => c.name).join(', ') ?? ''}?`)) {
+                          if (confirm(`¿Estás seguro de que quieres eliminar el filamento ${fil.marca} - ${fil.colors?.map(c => c.nombre).join(', ') ?? ''}?`)) {
                             deleteMutation.mutate(fil.filamentId);
                           }
                         }}
@@ -144,8 +144,8 @@ export default function FilamentsPage() {
           </Table>
         </div>
       </Card>
-      
-      <FilamentFormModal 
+
+      <FilamentFormModal
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onSubmit={handleSubmit}
