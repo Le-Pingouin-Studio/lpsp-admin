@@ -129,7 +129,7 @@ export default function FilamentsPage() {
                         size="icon" 
                         className="h-8 w-8 text-destructive hover:text-destructive"
                         onClick={() => {
-                          if (confirm(`¿Estás seguro de que quieres eliminar el filamento ${fil.marca} - ${fil.color}?`)) {
+                          if (confirm(`¿Estás seguro de que quieres eliminar el filamento ${fil.marca} - ${fil.colors?.map(c => c.name).join(', ') ?? ''}?`)) {
                             deleteMutation.mutate(fil.filamentId);
                           }
                         }}
